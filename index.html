@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<!--
+  ══════════════════════════════════════════════════════════════
+   ALIGHT RMS — index.html
+   Entry point. All logic in js/app.js · All styles in css/styles.css
+   Database/state layer in db/database.js
+  ══════════════════════════════════════════════════════════════
+-->
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alight Rwanda Logistics</title>
+  <link rel="icon" type="image/x-icon" href="LOGO/Logo design for Alight Rwanda Logistics.jpg" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+  <!-- Application CSS -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════
+       LOADER OVERLAY
+  ════════════════════════════════ -->
+  <div id="loader">
+    <div class="ld-logo">Alight <span style="color:var(--blue)">RMS</span></div>
+    <div class="ld-ring"></div>
+    <div class="ld-txt" id="ld-txt">Initialising…</div>
+  </div>
+
+  <!-- ════════════════════════════════
+       TOAST ZONE
+  ════════════════════════════════ -->
+  <div id="toast-zone"></div>
+
+  <!-- ════════════════════════════════
+       AUTH PAGE
+  ════════════════════════════════ -->
+  <div id="page-auth">
+    <div class="auth-glow a1"></div>
+    <div class="auth-glow a2"></div>
+    <div class="auth-wrap">
+
+      <div class="auth-logo">Alight <span style="color:var(--blue)">RMS</span></div>
+      <div class="auth-sub" id="auth-sub-line">logistics alight rwanda</div>
+
+      <!-- First-time setup banner -->
+      <div class="setup-banner" id="setup-banner" style="display:none">
+        <div class="setup-banner-icon">🔐</div>
+        <div>
+          <div class="setup-banner-title">First-time setup</div>
+          <div class="setup-banner-body">
+            No administrator account exists yet. Please create the first
+            Administrator account to unlock the full system.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs" id="auth-tabs">
+        <div class="auth-tab on" onclick="authTab('login',this)">Sign in</div>
+        <div class="auth-tab" onclick="authTab('reg',this)">Register</div>
+      </div>
+
+      <!-- ── LOGIN FORM ── -->
+      <div id="auth-login">
+        <div class="fg" id="fg-l-email">
+          <label>Email</label>
+          <input class="fc" type="email" id="l-email" placeholder="Enter your email"
+            oninput="clearFieldError('l-email','fg-l-email')" />
+          <div class="field-msg err" id="msg-l-email"></div>
+        </div>
+        <div class="fg" id="fg-l-pass">
+          <label>Password</label>
+          <input class="fc" type="password" id="l-pass" placeholder="Enter your password"
+            oninput="clearFieldError('l-pass','fg-l-pass')" onkeydown="if(event.key==='Enter')doLogin()" />
+          <div class="field-msg err" id="msg-l-pass"></div>
+        </div>
+        <button class="btn btn-p" style="width:100%;justify-content:center;padding:12px;margin-top:4px"
+          onclick="doLogin()">Sign in →</button>
+        <div style="text-align:center;font-size:12px;color:var(--text-3);margin-top:14px" id="login-register-link">
+          No account?
+          <span style="color:var(--blue);cursor:pointer;font-weight:600" onclick="authTabName('reg')">Register
+            here</span>
+        </div>
+      </div>
+
+      <!-- ── REGISTER FORM ── -->
+      <div id="auth-reg" style="display:none">
+
+        <!-- Required profile picture -->
+        <input type="file" id="r-pic" accept="image/*" style="display:none" onchange="onRegPicChange(this)" />
+        <div class="pic-required-zone" id="reg-pic-zone" onclick="document.getElementById('r-pic').click()">
+          <div class="pic-req-badge" id="reg-pic-badge">REQUIRED</div>
+          <div class="pic-req-av" id="reg-pic-av">👤</div>
+          <div class="pic-req-label" id="reg-pic-label">Upload your profile photo</div>
+          <div class="pic-req-sub">Click here · JPG, PNG or GIF · Max 5MB</div>
+        </div>
+
+        <div class="fr">
+          <div class="fg" id="fg-r-fn">
+            <label>First name <span class="req-star">*</span></label>
+            <input class="fc" type="text" id="r-fn" placeholder="First name"
+              oninput="clearFieldError('r-fn','fg-r-fn')" />
+            <div class="field-msg err" id="msg-r-fn"></div>
+          </div>
+          <div class="fg" id="fg-r-ln">
+            <label>Last name <span class="req-star">*</span></label>
+            <input class="fc" type="text" id="r-ln" placeholder="Last name"
+              oninput="clearFieldError('r-ln','fg-r-ln')" />
+            <div class="field-msg err" id="msg-r-ln"></div>
+          </div>
+        </div>
+
+        <div class="fg" id="fg-r-email">
+          <label>Email <span class="req-star">*</span></label>
+          <input class="fc" type="email" id="r-email" placeholder="your@email.com"
+            oninput="clearFieldError('r-email','fg-r-email')" />
+          <div class="field-msg err" id="msg-r-email"></div>
+        </div>
+
+        <div class="fg" id="fg-r-phone">
+          <label>Phone</label>
+          <input class="fc" type="text" id="r-phone" placeholder="+250 78 000 0000"
+            oninput="clearFieldError('r-phone','fg-r-phone')" />
+          <div class="field-msg err" id="msg-r-phone"></div>
+        </div>
+
+        <!-- Role (hidden during first-time setup — forced to admin) -->
+        <div class="fg" id="fg-r-role" style="display:none">
+          <label>Role <span class="req-star">*</span></label>
+          <select class="fc" id="r-role" onchange="onRegRoleChange(this)">
+            <option value="user">User (Client)</option>
+            <option value="staff">Staff</option>
+            <option value="manager">Manager</option>
+          </select>
+          <div class="admin-only-notice" id="reg-admin-notice">
+            🔒 Administrator role can only be assigned by an existing Administrator.
+          </div>
+        </div>
+
+        <div class="fg" id="fg-r-pass">
+          <label>Password <span class="req-star">*</span></label>
+          <input class="fc" type="password" id="r-pass" placeholder="Min. 8 characters"
+            oninput="clearFieldError('r-pass','fg-r-pass');checkPasswordStrength('r-pass','r-pass-strength')" />
+          <div class="field-msg err" id="msg-r-pass"></div>
+          <div id="r-pass-strength" style="margin-top:6px"></div>
+        </div>
+
+        <div class="fg" id="fg-r-pass2">
+          <label>Confirm password <span class="req-star">*</span></label>
+          <input class="fc" type="password" id="r-pass2" placeholder="Repeat password"
+            oninput="clearFieldError('r-pass2','fg-r-pass2')" />
+          <div class="field-msg err" id="msg-r-pass2"></div>
+        </div>
+
+        <button class="btn btn-p" id="reg-submit-btn"
+          style="width:100%;justify-content:center;padding:12px;margin-top:4px" onclick="doRegister()">Create account
+          →</button>
+
+        <div style="text-align:center;font-size:13px;color:var(--text-2);margin-top:14px" id="reg-login-link">
+          Have an account?
+          <span style="color:var(--blue);cursor:pointer;font-weight:600" onclick="authTabName('login')">Sign in</span>
+        </div>
+      </div>
+      <!-- /auth-reg -->
+
+    </div><!-- /auth-wrap -->
+  </div><!-- /page-auth -->
+
+
+  <!-- ════════════════════════════════
+       DASHBOARD
+  ════════════════════════════════ -->
+  <div id="dash">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-logo" onclick="toggleSidebar()">Alight <span>RMS</span></div>
+      <div id="sb-nav"></div>
+      <div class="sb-foot">
+        <div class="sb-user" onclick="gotoSection('profile')">
+          <div class="avatar" id="sb-av"></div>
+          <div>
+            <div class="sb-uname" id="sb-name">—</div>
+            <div class="sb-urole" id="sb-role">—</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="dash-main">
+
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <div id="page-title" class="page-title">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+          <div class="search-bar">
+            <span style="color:var(--text-3);font-size:14px">🔍</span>
+            <input type="text" placeholder="Search…" oninput="globalSearch(this.value)" />
+          </div>
+          <div class="notif-btn">
+            <button class="icon-btn" onclick="gotoSection('notifications')">🔔</button>
+            <div class="notif-dot" id="notif-dot" style="display:none"></div>
+          </div>
+          <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+          <div class="avatar" id="topbar-av" style="cursor:pointer" onclick="gotoSection('profile')"></div>
+          <button class="btn btn-g btn-sm" onclick="doLogout()">Sign out</button>
+        </div>
+      </div>
+
+      <!-- SCROLLABLE BODY -->
+      <div class="dash-body">
+
+        <!-- ══ OVERVIEW ══ -->
+        <div id="s-overview" class="section">
+          <div class="metrics-grid" id="metric-cards"></div>
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-top">
+                <div class="chart-name">Activity overview</div>
+                <div class="period-btns">
+                  <button class="pbtn on" onclick="setPeriod(this,'7d')">7D</button>
+                  <button class="pbtn" onclick="setPeriod(this,'30d')">30D</button>
+                  <button class="pbtn" onclick="setPeriod(this,'90d')">90D</button>
+                </div>
+              </div>
+              <div class="chart-wrap" id="lineChartWrap"><canvas id="lineChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-top">
+                <div class="chart-name">Status breakdown</div>
+              </div>
+              <div class="chart-wrap" id="donutChartWrap"><canvas id="donutChart"></canvas></div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-title">Recent requests</div>
+              <div class="tbl-acts">
+                <input class="tbl-search" placeholder="Filter…" oninput="filterTbl(this,'req-tbody')" />
+                <button class="btn btn-p btn-sm" onclick="gotoSection('new-request')">+ New request</button>
+              </div>
+            </div>
+            <table class="data-tbl">
+              <thead>
+                <tr>
+                  <th>Ref</th>
+                  <th>Type</th>
+                  <th>Requester</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="req-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ══ ANALYTICS ══ -->
+        <div id="s-analytics" class="section">
+          <div class="kpi-row" id="analytics-kpis"></div>
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-top">
+                <div class="chart-name">Requests per month</div>
+              </div>
+              <div class="chart-wrap" id="barChartWrap"><canvas id="barChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-top">
+                <div class="chart-name">By category</div>
+              </div>
+              <div class="chart-wrap" id="catChartWrap"><canvas id="catChart"></canvas></div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-title">Performance summary</div>
+            </div>
+            <table class="data-tbl">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>This month</th>
+                  <th>Last month</th>
+                  <th>Change</th>
+                  <th>Trend</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ══ REPORTS (Admin + Manager only) ══ -->
+        <div id="s-reports" class="section">
+          <!-- Populated by renderReports() — access-gated there -->
+        </div>
+
+        <!-- ══ USERS ══ -->
+        <div id="s-users" class="section">
+          <div class="users-filter">
+            <span class="ufilter on" onclick="filterUsers('all',this)">All</span>
+            <span class="ufilter" onclick="filterUsers('admin',this)">Admins</span>
+            <span class="ufilter" onclick="filterUsers('manager',this)">Managers</span>
+            <span class="ufilter" onclick="filterUsers('staff',this)">Staff</span>
+            <span class="ufilter" onclick="filterUsers('user',this)">Users</span>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-title">User management</div>
+              <div class="tbl-acts">
+                <input class="tbl-search" placeholder="Search users…" oninput="filterTbl(this,'users-tbody')" />
+                <button class="btn btn-p btn-sm" onclick="openModal('add-user')">+ Add user</button>
+              </div>
+            </div>
+            <table class="data-tbl">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ══ ALL REQUESTS ══ -->
+        <div id="s-requests" class="section">
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-title">All requests</div>
+              <div class="tbl-acts">
+                <input class="tbl-search" placeholder="Filter…" oninput="filterTbl(this,'all-req-tbody')" />
+                <select class="fc" style="width:140px;padding:7px 10px" onchange="filterReqStatus(this.value)">
+                  <option value="">All statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+            </div>
+            <table class="data-tbl">
+              <thead>
+                <tr>
+                  <th>Ref</th>
+                  <th>Type</th>
+                  <th>Requester</th>
+                  <th>Date</th>
+                  <th>Details</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="all-req-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ══ NEW REQUEST ══ -->
+        <div id="s-new-request" class="section">
+          <div style="display:grid;grid-template-columns:1fr 300px;gap:20px">
+            <div class="card">
+              <div class="card-title">Submit a new request</div>
+              <div class="section-label">Select request type</div>
+              <div class="req-type-grid" id="req-type-grid">
+                <div class="req-type-btn sel" onclick="selectReqType('booking',this)">
+                  <div class="rt-icon">🚗</div>
+                  <div class="rt-label">Vehicle Booking</div>
+                  <div class="rt-sub">Reserve a vehicle</div>
+                </div>
+                <div class="req-type-btn" onclick="selectReqType('fuel',this)">
+                  <div class="rt-icon">⛽</div>
+                  <div class="rt-label">Fuel Request</div>
+                  <div class="rt-sub">Request fuel supply</div>
+                </div>
+                <div class="req-type-btn" onclick="selectReqType('service',this)">
+                  <div class="rt-icon">🔧</div>
+                  <div class="rt-label">Service Request</div>
+                  <div class="rt-sub">Maintenance &amp; support</div>
+                </div>
+                <div class="req-type-btn" onclick="selectReqType('travel',this)">
+                  <div class="rt-icon">🛣️</div>
+                  <div class="rt-label">Travel Request</div>
+                  <div class="rt-sub">Mission / field travel</div>
+                </div>
+                <div class="req-type-btn" onclick="selectReqType('procurement',this)">
+                  <div class="rt-icon">📦</div>
+                  <div class="rt-label">Procurement</div>
+                  <div class="rt-sub">Purchase goods / items</div>
+                </div>
+                <div class="req-type-btn" onclick="selectReqType('leave',this)">
+                  <div class="rt-icon">🏖️</div>
+                  <div class="rt-label">Leave Request</div>
+                  <div class="rt-sub">Annual / sick / personal</div>
+                </div>
+                <div class="req-type-btn" onclick="selectReqType('advance',this)">
+                  <div class="rt-icon">💰</div>
+                  <div class="rt-label">Cash Advance</div>
+                  <div class="rt-sub">Request advance funds</div>
+                </div>
+                <div class="req-type-btn" onclick="selectReqType('it',this)">
+                  <div class="rt-icon">💻</div>
+                  <div class="rt-label">IT Support</div>
+                  <div class="rt-sub">Tech / equipment issues</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div id="req-form-fields"></div>
+              <div class="fg" id="fg-req-notes">
+                <label>Notes / additional info</label>
+                <textarea class="fc" id="req-notes" rows="3" placeholder="Any additional details or context…"
+                  oninput="clearFieldError('req-notes','fg-req-notes')"></textarea>
+                <div class="field-msg err" id="msg-req-notes"></div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:8px">
+                <button class="btn btn-p" onclick="submitRequest()">Submit request →</button>
+                <button class="btn btn-o" onclick="gotoSection('my-requests')">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Workflow sidebar -->
+            <div>
+              <div class="card" style="margin-bottom:14px">
+                <div class="card-title">Workflow</div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                    <div
+                      style="width:26px;height:26px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">
+                      1</div>
+                    <span>Submit request</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                    <div
+                      style="width:26px;height:26px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-2);flex-shrink:0">
+                      2</div>
+                    <span style="color:var(--text-2)">Manager review</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                    <div
+                      style="width:26px;height:26px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-2);flex-shrink:0">
+                      3</div>
+                    <span style="color:var(--text-2)">Admin approval</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                    <div
+                      style="width:26px;height:26px;border-radius:50%;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-2);flex-shrink:0">
+                      4</div>
+                    <span style="color:var(--text-2)">Notification sent</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title">My pending</div>
+                <div id="sidebar-my-req"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ MY REQUESTS ══ -->
+        <div id="s-my-requests" class="section">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px" id="my-req-grid">
+          </div>
+        </div>
+
+        <!-- ══ NOTIFICATIONS ══ -->
+        <div id="s-notifications" class="section">
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <div class="card-title" style="margin:0">Notifications</div>
+              <button class="btn btn-g btn-sm" onclick="markAllRead()">Mark all read</button>
+            </div>
+            <div id="notif-list"></div>
+          </div>
+        </div>
+
+        <!-- ══ AUDIT LOG ══ -->
+        <div id="s-logs" class="section">
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-title">System audit log</div>
+              <div class="tbl-acts">
+                <input class="tbl-search" placeholder="Filter logs…" oninput="filterTbl(this,'logs-tbody')" />
+              </div>
+            </div>
+            <table class="data-tbl">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Actor</th>
+                  <th>Role</th>
+                  <th>Action</th>
+                  <th>Module</th>
+                </tr>
+              </thead>
+              <tbody id="logs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ══ TASKS ══ -->
+        <div id="s-tasks" class="section">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px" id="tasks-board"></div>
+        </div>
+
+        <!-- ══ SETTINGS ══ -->
+        <div id="s-settings" class="section">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+            <!-- Account settings -->
+            <div class="card">
+              <div class="card-title">Account settings</div>
+              <div class="set-av-wrap">
+                <div class="set-av-img" id="set-av-preview">👤</div>
+                <div style="flex:1">
+                  <div style="font-weight:600;margin-bottom:4px">Profile photo</div>
+                  <div style="font-size:12px;color:var(--text-3);margin-bottom:8px">This appears across the system</div>
+                  <input type="file" id="set-pic" accept="image/*" style="display:none"
+                    onchange="updateProfilePic(this)" />
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-o btn-sm" onclick="document.getElementById('set-pic').click()">📷
+                      Change</button>
+                    <button class="btn btn-g btn-sm" onclick="removeProfilePic()">🗑 Remove</button>
+                  </div>
+                </div>
+              </div>
+              <div class="fg" id="fg-set-name">
+                <label>Display name</label>
+                <input class="fc" id="set-name" type="text" oninput="clearFieldError('set-name','fg-set-name')" />
+                <div class="field-msg err" id="msg-set-name"></div>
+              </div>
+              <div class="fg" id="fg-set-email">
+                <label>Email</label>
+                <input class="fc" id="set-email" type="email" oninput="clearFieldError('set-email','fg-set-email')" />
+                <div class="field-msg err" id="msg-set-email"></div>
+              </div>
+              <div class="fg" id="fg-set-phone">
+                <label>Phone</label>
+                <input class="fc" id="set-phone" type="text" oninput="clearFieldError('set-phone','fg-set-phone')" />
+                <div class="field-msg err" id="msg-set-phone"></div>
+              </div>
+              <button class="btn btn-p btn-sm" onclick="saveSettings()">Save changes</button>
+            </div>
+
+            <!-- Preferences -->
+            <div class="card">
+              <div class="card-title">Preferences</div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">Dark mode</div>
+                  <div class="setting-sub">Toggle light/dark theme</div>
+                </div>
+                <div class="toggle on" id="dark-toggle" onclick="toggleTheme()"></div>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">Email notifications</div>
+                  <div class="setting-sub">Receive updates via email</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">SMS alerts</div>
+                  <div class="setting-sub">Critical alerts via SMS</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">WhatsApp updates</div>
+                  <div class="setting-sub">Status changes via WhatsApp</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+
+            <!-- Admin-only system settings -->
+            <div class="card" id="admin-settings" style="display:none">
+              <div class="card-title">System settings (Admin)</div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">Maintenance mode</div>
+                  <div class="setting-sub">Disable user access temporarily</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on');toast('Maintenance mode toggled','i')"></div>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">Registration open</div>
+                  <div class="setting-sub">Allow new user registrations</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">Audit logging</div>
+                  <div class="setting-sub">Log all user actions</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══ PROFILE ══ -->
+        <div id="s-profile" class="section">
+          <div class="profile-banner">
+            <div class="profile-av" id="profile-av">
+              <div class="av-overlay">✏️</div>
+            </div>
+            <div>
+              <div class="profile-name" id="profile-name">—</div>
+              <div class="profile-email" id="profile-email">—</div>
+              <div style="margin-top:8px" id="profile-role-tag"></div>
+              <div style="font-size:12px;color:var(--text-3);margin-top:6px">Click photo to update</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="card">
+              <div class="card-title">Account details</div>
+              <div id="profile-stats"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Recent activity</div>
+              <div id="profile-activity"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /dash-body -->
+    </div><!-- /dash-main -->
+  </div><!-- /dash -->
+
+
+  <!-- ════════════════════════════════
+       MODALS
+  ════════════════════════════════ -->
+
+  <!-- ADD USER -->
+  <div class="modal-bg" id="modal-add-user">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Add new user</div>
+        <div class="modal-x" onclick="closeModal('add-user')">✕</div>
+      </div>
+      <input type="file" id="m-pic" accept="image/*" style="display:none" onchange="onModalPicChange(this)" />
+      <div class="pic-required-zone" id="m-pic-zone" onclick="document.getElementById('m-pic').click()"
+        style="margin-bottom:16px">
+        <div class="pic-req-badge" id="m-pic-badge">REQUIRED</div>
+        <div class="pic-req-av" id="m-av-preview">👤</div>
+        <div class="pic-req-label" id="m-pic-label">Upload profile photo</div>
+        <div class="pic-req-sub">Click here · JPG, PNG or GIF</div>
+      </div>
+      <div class="fr">
+        <div class="fg" id="fg-m-fn">
+          <label>First name <span class="req-star">*</span></label>
+          <input class="fc" id="m-fn" type="text" placeholder="First name"
+            oninput="clearFieldError('m-fn','fg-m-fn')" />
+          <div class="field-msg err" id="msg-m-fn"></div>
+        </div>
+        <div class="fg" id="fg-m-ln">
+          <label>Last name <span class="req-star">*</span></label>
+          <input class="fc" id="m-ln" type="text" placeholder="Last name" oninput="clearFieldError('m-ln','fg-m-ln')" />
+          <div class="field-msg err" id="msg-m-ln"></div>
+        </div>
+      </div>
+      <div class="fg" id="fg-m-email">
+        <label>Email <span class="req-star">*</span></label>
+        <input class="fc" id="m-email" type="email" placeholder="email@organisation.com"
+          oninput="clearFieldError('m-email','fg-m-email')" />
+        <div class="field-msg err" id="msg-m-email"></div>
+      </div>
+      <div class="fg" id="fg-m-phone">
+        <label>Phone</label>
+        <input class="fc" id="m-phone" type="text" placeholder="+250 78…"
+          oninput="clearFieldError('m-phone','fg-m-phone')" />
+        <div class="field-msg err" id="msg-m-phone"></div>
+      </div>
+      <div class="fg" id="fg-m-role">
+        <label>Role</label>
+        <select class="fc" id="m-role">
+          <option value="user">User</option>
+          <option value="staff">Staff</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+      <div class="fg" id="fg-m-pass">
+        <label>Temporary password <span class="req-star">*</span></label>
+        <input class="fc" id="m-pass" type="password" placeholder="Set a temporary password"
+          oninput="clearFieldError('m-pass','fg-m-pass');checkPasswordStrength('m-pass','m-pass-strength')" />
+        <div class="field-msg err" id="msg-m-pass"></div>
+        <div id="m-pass-strength" style="margin-top:6px"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-p" onclick="addUser()" style="flex:1;justify-content:center">Create user</button>
+        <button class="btn btn-o" onclick="closeModal('add-user')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW REQUEST -->
+  <div class="modal-bg" id="modal-view-req">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="vreq-title">Request detail</div>
+        <div class="modal-x" onclick="closeModal('view-req')">✕</div>
+      </div>
+      <div id="vreq-body"></div>
+      <div style="display:flex;gap:10px;margin-top:20px" id="vreq-actions"></div>
+    </div>
+  </div>
+
+  <!-- EDIT USER -->
+  <div class="modal-bg" id="modal-edit-user">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Edit user</div>
+        <div class="modal-x" onclick="closeModal('edit-user')">✕</div>
+      </div>
+      <div class="set-av-wrap" style="margin-bottom:16px">
+        <div class="set-av-img" id="eu-av-preview">👤</div>
+        <div>
+          <input type="file" id="eu-pic" accept="image/*" style="display:none" onchange="previewEditUserPic(this)" />
+          <button class="btn btn-o btn-sm" onclick="document.getElementById('eu-pic').click()">📷 Change photo</button>
+        </div>
+      </div>
+      <div class="fg" id="fg-eu-name">
+        <label>Name</label>
+        <input class="fc" id="eu-name" type="text" oninput="clearFieldError('eu-name','fg-eu-name')" />
+        <div class="field-msg err" id="msg-eu-name"></div>
+      </div>
+      <div class="fg" id="fg-eu-email">
+        <label>Email</label>
+        <input class="fc" id="eu-email" type="email" oninput="clearFieldError('eu-email','fg-eu-email')" />
+        <div class="field-msg err" id="msg-eu-email"></div>
+      </div>
+      <div class="fg" id="fg-eu-role">
+        <label>Role</label>
+        <select class="fc" id="eu-role">
+          <option value="user">User</option>
+          <option value="staff">Staff</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Status</label>
+        <select class="fc" id="eu-status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <input type="hidden" id="eu-id" />
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-p" onclick="saveEditUser()" style="flex:1;justify-content:center">Save changes</button>
+        <button class="btn btn-o" onclick="closeModal('edit-user')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SCRIPTS (order matters)
+  ════════════════════════════════ -->
+  <script src="database.js"></script>
+  <script src="app.js"></script>
+
+</body>
+
+</html>
