@@ -1,8 +1,14 @@
-{
-  "name": "alight-logistics",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+
+  {
+    "name": "alight-logistics",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "build": "your-build-command-here"
+    },
+  ...
+  }
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
