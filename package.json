@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "build": "your-build-command-here",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "dependencies": {
     "accepts": "^2.0.0",
     "body-parser": "^2.2.2",
@@ -73,5 +69,20 @@
     "unpipe": "^1.0.0",
     "vary": "^1.1.2",
     "wrappy": "^1.0.2"
-  }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tupatrick97-ship-it/alight-logistics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tupatrick97-ship-it/alight-logistics/issues"
+  },
+  "homepage": "https://github.com/tupatrick97-ship-it/alight-logistics#readme"
 }
